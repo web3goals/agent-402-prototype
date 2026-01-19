@@ -13,4 +13,5 @@
 
 ```
 PRIVATE_KEY=""
+GEMINI_API_KEY=""
 ```
