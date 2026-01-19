@@ -1,8 +1,12 @@
 import { createFailedApiResponse, createSuccessApiResponse } from "@/lib/api";
-import { GoogleGenAI } from "@google/genai/node";
+import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { NextRequest } from "next/server";
 import z from "zod";
+
+function getWeather(location: string) {
+  return `The weather in ${location} is sunny.`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,12 +38,60 @@ export async function POST(request: NextRequest) {
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-    const response = await ai.models.generateContent({
+    // 2. Send the request with tools
+    let interaction = await ai.interactions.create({
       model: "gemini-3-flash-preview",
-      contents: message,
+      input: message,
+      tools: [
+        {
+          type: "function",
+          name: "get_weather",
+          description: "Gets the weather for a given location.",
+          parameters: {
+            type: "object",
+            properties: {
+              location: {
+                type: "string",
+                description: "The city and state, e.g. San Francisco, CA",
+              },
+            },
+            required: ["location"],
+          },
+        },
+      ],
     });
 
-    return createSuccessApiResponse({ message: response.text });
+    for (const output of interaction.outputs!) {
+      if (output.type === "function_call") {
+        console.log(
+          `Tool Call: ${output.name}(${JSON.stringify(output.arguments)})`,
+        );
+
+        // Execute your actual function here
+        // Note: ensure arguments match your function signature
+        const result = getWeather(JSON.stringify(output.arguments.location));
+
+        // Send result back to the model
+        interaction = await ai.interactions.create({
+          model: "gemini-3-flash-preview",
+          previous_interaction_id: interaction.id,
+          input: [
+            {
+              type: "function_result",
+              name: output.name,
+              call_id: output.id,
+              result: result,
+            },
+          ],
+        });
+
+        console.log(`Response: ${JSON.stringify(interaction)}`);
+      }
+
+      console.log({ interaction });
+    }
+
+    return createSuccessApiResponse({ interaction });
   } catch (error) {
     console.error(
       "[API] Failed to post message, error:",
