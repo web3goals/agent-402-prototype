@@ -19,7 +19,7 @@ let bot: TelegramBot;
 app.use(express.json());
 
 // API endpoint to check server health
-app.get("/health", (_req: Request, res: Response) => {
+app.get("/api/health", (_req: Request, res: Response) => {
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
