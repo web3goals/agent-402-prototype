@@ -61,15 +61,25 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    for (const output of interaction.outputs!) {
-      if (output.type === "function_call") {
+    // Handle tool calls in a loop
+    let hasToolCalls = true;
+    while (hasToolCalls) {
+      hasToolCalls = false;
+
+      const functionCallOutput = interaction.outputs?.find(
+        (o) => o.type === "function_call",
+      );
+
+      if (functionCallOutput) {
+        hasToolCalls = true; // Continue loop if we find a tool call
         console.log(
-          `Tool Call: ${output.name}(${JSON.stringify(output.arguments)})`,
+          `Tool Call: ${functionCallOutput.name}(${JSON.stringify(functionCallOutput.arguments)})`,
         );
 
         // Execute your actual function here
-        // Note: ensure arguments match your function signature
-        const result = getWeather(JSON.stringify(output.arguments.location));
+        const result = getWeather(
+          JSON.stringify(functionCallOutput.arguments.location),
+        );
 
         // Send result back to the model
         interaction = await ai.interactions.create({
@@ -78,20 +88,23 @@ export async function POST(request: NextRequest) {
           input: [
             {
               type: "function_result",
-              name: output.name,
-              call_id: output.id,
+              name: functionCallOutput.name,
+              call_id: functionCallOutput.id,
               result: result,
             },
           ],
         });
-
-        console.log(`Response: ${JSON.stringify(interaction)}`);
       }
-
-      console.log({ interaction });
     }
 
-    return createSuccessApiResponse({ interaction });
+    // Extract the final text response
+    const textOutput = interaction.outputs?.find((o) => o.type === "text");
+    const content = textOutput?.text || "No response text found";
+
+    return createSuccessApiResponse({
+      role: "model",
+      parts: [{ text: content }],
+    });
   } catch (error) {
     console.error(
       "[API] Failed to post message, error:",
