@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+import axios from "axios";
 import express, { Request, Response } from "express";
 import { Server } from "http";
 import * as cron from "node-cron";
@@ -8,8 +9,12 @@ import TelegramBot from "node-telegram-bot-api";
 import { logger } from "./utils/logger";
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+
+const PORT = process.env.PORT || 8000;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
+const SELLER_WALLET = process.env.SELLER_WALLET;
+const USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // TODO: Update value for mainnet if needed
 
 let server: Server;
 let greetingTask: cron.ScheduledTask;
@@ -24,6 +29,109 @@ app.get("/api/health", (_req: Request, res: Response) => {
     status: "ok",
     timestamp: new Date().toISOString(),
   });
+});
+
+// API endpoint to get posts
+app.get("/api/posts", async (req: Request, res: Response) => {
+  logger.info("[API] Received request for /api/posts");
+
+  const paymentHeader =
+    req.headers["X-PAYMENT"] ||
+    req.headers["x-payment"] ||
+    req.body?.paymentHeader;
+
+  // Step 1: Check if payment is provided
+  if (!paymentHeader) {
+    return res.status(402).json({
+      error: "Payment Required",
+      x402Version: 1,
+      paymentRequirements: {
+        scheme: "exact",
+        network: "cronos-testnet", // Switch to 'cronos' for mainnet
+        payTo: SELLER_WALLET,
+        asset: USDCE_CONTRACT,
+        description: "Premium API data access",
+        mimeType: "application/json",
+        maxAmountRequired: "100000", // 0.1 USDC.e (6 decimals)
+        maxTimeoutSeconds: 300,
+      },
+    });
+  }
+
+  try {
+    const requestBody = {
+      x402Version: 1,
+      paymentHeader: paymentHeader,
+      paymentRequirements: {
+        scheme: "exact",
+        network: "cronos-testnet", // Same network as in 402 response
+        payTo: SELLER_WALLET,
+        asset: USDCE_CONTRACT,
+        description: "Premium API data access",
+        mimeType: "application/json",
+        maxAmountRequired: "100000", // 0.1 USDC.e (6 decimals)
+        maxTimeoutSeconds: 300,
+      },
+    };
+
+    // Step 2: Verify payment
+    const verifyResponse = await axios.post(
+      `${FACILITATOR_URL}/verify`,
+      requestBody,
+      {
+        headers: { "Content-Type": "application/json", "X402-Version": "1" },
+      },
+    );
+
+    if (!verifyResponse.data.isValid) {
+      return res.status(402).json({
+        error: "Invalid payment",
+        reason: verifyResponse.data.invalidReason,
+      });
+    }
+
+    // Step 3: Settle payment
+    const settleResponse = await axios.post(
+      `${FACILITATOR_URL}/settle`,
+      requestBody,
+      {
+        headers: { "Content-Type": "application/json", "X402-Version": "1" },
+      },
+    );
+
+    // Step 4: Check settlement and return content
+    if (settleResponse.data.event === "payment.settled") {
+      const posts: string[] = ["Hello!", "This is paid content!"];
+
+      return res.status(200).json({
+        data: {
+          posts,
+        },
+        payment: {
+          txHash: settleResponse.data.txHash,
+          from: settleResponse.data.from,
+          to: settleResponse.data.to,
+          value: settleResponse.data.value,
+          blockNumber: settleResponse.data.blockNumber,
+          timestamp: settleResponse.data.timestamp,
+        },
+      });
+    } else {
+      return res.status(402).json({
+        error: "Payment settlement failed",
+        reason: settleResponse.data.error,
+      });
+    }
+  } catch (error) {
+    return res.status(500).json({
+      error: "Server error processing payment",
+      details: axios.isAxiosError(error)
+        ? error.response?.data || error.message
+        : error instanceof Error
+          ? error.message
+          : String(error),
+    });
+  }
 });
 
 async function startServer(): Promise<void> {
@@ -66,6 +174,7 @@ function startCronScheduler(): void {
   logger.info("[Cron] Cron scheduler setup completed");
 }
 
+// @ts-ignore
 function startTelegramBot(): void {
   if (!TELEGRAM_BOT_TOKEN) {
     logger.error(
@@ -143,7 +252,7 @@ async function startApp(): Promise<void> {
     startCronScheduler();
 
     // Start Telegram bot
-    startTelegramBot();
+    // startTelegramBot();
 
     logger.info("[App] Application started successfully");
 

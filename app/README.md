@@ -12,5 +12,5 @@
 ## Template for .env file
 
 ```
-
+PRIVATE_KEY=""
 ```
