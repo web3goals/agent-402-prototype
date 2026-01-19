@@ -13,4 +13,5 @@
 
 ```
 NODE_ENV=""
+TELEGRAM_BOT_TOKEN=""
 ```

@@ -4,13 +4,16 @@ dotenv.config();
 import express, { Request, Response } from "express";
 import { Server } from "http";
 import * as cron from "node-cron";
+import TelegramBot from "node-telegram-bot-api";
 import { logger } from "./utils/logger";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 let server: Server;
 let greetingTask: cron.ScheduledTask;
+let bot: TelegramBot;
 
 // Middleware
 app.use(express.json());
@@ -50,9 +53,7 @@ function startCronScheduler(): void {
     "*/5 * * * *",
     async () => {
       try {
-        logger.info("[Cron] Greeting...");
         logger.info("[Cron] Hello! This is your scheduled greeting!");
-        logger.info("[Cron] Greeting completed");
       } catch (error) {
         logger.error("[Cron] Failed to greet, error:", error);
       }
@@ -63,6 +64,35 @@ function startCronScheduler(): void {
   );
 
   logger.info("[Cron] Cron scheduler setup completed");
+}
+
+function startTelegramBot(): void {
+  if (!TELEGRAM_BOT_TOKEN) {
+    logger.error(
+      "[Telegram] TELEGRAM_BOT_TOKEN is not defined in environment variables",
+    );
+    return;
+  }
+
+  logger.info("[Telegram] Starting Telegram bot...");
+
+  bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
+
+  // Listen for posts in channels where the bot is an admin
+  bot.on("channel_post", (msg) => {
+    const channelName = msg.chat.title || "Unknown Channel";
+    const text = msg.text || msg.caption || "Unknown text";
+
+    logger.info(
+      `[Telegram] New post in channel, channel: ${channelName}, text: ${text}`,
+    );
+  });
+
+  bot.on("polling_error", (error) => {
+    logger.error("[Telegram] Polling error, error:", error);
+  });
+
+  logger.info("[Telegram] Telegram bot is now polling for channel posts");
 }
 
 async function gracefulShutdown(signal: string): Promise<void> {
@@ -85,6 +115,12 @@ async function gracefulShutdown(signal: string): Promise<void> {
     logger.info("[Shutdown] Greeting task stopped");
   }
 
+  // Stop Telegram bot polling
+  if (bot) {
+    await bot.stopPolling();
+    logger.info("[Shutdown] Telegram bot polling stopped");
+  }
+
   // Force shutdown after 10 seconds if graceful shutdown takes too long
   setTimeout(() => {
     logger.info("[Shutdown] Forcing shutdown after timeout");
@@ -105,6 +141,9 @@ async function startApp(): Promise<void> {
 
     // Start cron scheduler
     startCronScheduler();
+
+    // Start Telegram bot
+    startTelegramBot();
 
     logger.info("[App] Application started successfully");
 
