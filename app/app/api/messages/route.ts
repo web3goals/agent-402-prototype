@@ -15,6 +15,7 @@ export async function POST(request: NextRequest) {
     // Define the schema for request body validation
     const bodySchema = z.object({
       message: z.string(),
+      conversationId: z.string().optional(),
     });
 
     // Extract request body
@@ -34,13 +35,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract validated data
-    const { message } = bodyParseResult.data;
+    const { message, conversationId } = bodyParseResult.data;
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
     // 2. Send the request with tools
     let interaction = await ai.interactions.create({
       model: "gemini-3-flash-preview",
+      previous_interaction_id: conversationId,
       input: message,
       tools: [
         {
@@ -104,6 +106,7 @@ export async function POST(request: NextRequest) {
     return createSuccessApiResponse({
       role: "model",
       parts: [{ text: content }],
+      conversationId: interaction.id,
     });
   } catch (error) {
     console.error(

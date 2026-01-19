@@ -14,6 +14,9 @@ interface ChatMessage extends Content {
 
 export default function HomePage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversationId, setConversationId] = useState<string | undefined>(
+    undefined,
+  );
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -42,12 +45,15 @@ export default function HomePage() {
       const response = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: input, conversationId }),
       });
 
       const data = await response.json();
 
       if (data.isSuccess && data.data) {
+        if (data.data.conversationId) {
+          setConversationId(data.data.conversationId);
+        }
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
           role: data.data.role || "model",
