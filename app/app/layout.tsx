@@ -1,9 +1,12 @@
+import { Footer } from "@/components/layout/footer";
+import { Header } from "@/components/layout/header";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { appConfig } from "@/config/app";
 import { cn } from "@/lib/utils";
 import "@/styles/globals.css";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -45,7 +48,12 @@ export default function RootLayout({
           defaultTheme="dark"
           disableTransitionOnChange
         >
-          {children}
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <div className="flex-1">{children}</div>
+            <Footer />
+            <Toaster />
+          </div>
         </ThemeProvider>
       </body>
     </html>
