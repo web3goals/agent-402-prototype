@@ -51,7 +51,7 @@ export default function IndexPage() {
       </div>
       <Separator className="my-8" />
       {/* Items */}
-      <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Item variant="outline">
           <ItemMedia>
             <GlobeIcon className="size-5" />
