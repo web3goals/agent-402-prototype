@@ -91,7 +91,7 @@ export default function ChatPage() {
           <div className="space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground mt-10">
-                <p>Start a conversation with the Agent 402</p>
+                <p>Start a conversation with Agent 402</p>
               </div>
             )}
 
