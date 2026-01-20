@@ -1,4 +1,33 @@
-import { Content, GoogleGenAI } from "@google/genai";
+import { Content, GoogleGenAI, Interactions } from "@google/genai";
+
+const model: Interactions.Model = "gemini-2.5-flash";
+const tools: Interactions.Tool[] = [
+  {
+    type: "function",
+    name: "get_weather",
+    description: "Gets the weather for a given location.",
+    parameters: {
+      type: "object",
+      properties: {
+        location: {
+          type: "string",
+          description: "The city and state, e.g. San Francisco, CA",
+        },
+      },
+      required: ["location"],
+    },
+  },
+  {
+    type: "function",
+    name: "get_data_sources",
+    description: "Gets a list of available data sources.",
+    parameters: {
+      type: "object",
+      properties: {},
+      required: [],
+    },
+  },
+];
 
 export async function processMessage(
   message: string,
@@ -12,49 +41,17 @@ export async function processMessage(
 
   // Send the request with tools
   let interaction = await ai.interactions.create({
-    model: "gemini-2.5-flash",
+    model: model,
     previous_interaction_id: interactionId,
     input: message,
-    tools: [
-      {
-        type: "function",
-        name: "get_weather",
-        description: "Gets the weather for a given location.",
-        parameters: {
-          type: "object",
-          properties: {
-            location: {
-              type: "string",
-              description: "The city and state, e.g. San Francisco, CA",
-            },
-          },
-          required: ["location"],
-        },
-      },
-    ],
+    tools: tools,
   });
 
-  // Handle tool calls in a loop
-  let hasToolCalls = true;
-  while (hasToolCalls) {
-    hasToolCalls = false;
-
-    const functionCallOutput = interaction.outputs?.find(
-      (o) => o.type === "function_call",
-    );
-
-    if (functionCallOutput) {
-      hasToolCalls = true; // Continue loop if we find a tool call
-      console.log(
-        `Tool Call: ${functionCallOutput.name}(${JSON.stringify(
-          functionCallOutput.arguments,
-        )})`,
-      );
-
-      // Execute your actual function here
-      const result = getWeather(
-        JSON.stringify(functionCallOutput.arguments.location),
-      );
+  // Handle the tool call
+  for (const output of interaction.outputs!) {
+    if (output.type === "function_call") {
+      // Get the result from the tool
+      const result = getToolResult(output);
 
       // Send result back to the model
       interaction = await ai.interactions.create({
@@ -63,8 +60,8 @@ export async function processMessage(
         input: [
           {
             type: "function_result",
-            name: functionCallOutput.name,
-            call_id: functionCallOutput.id,
+            name: output.name,
+            call_id: output.id,
             result: result,
           },
         ],
@@ -73,7 +70,9 @@ export async function processMessage(
   }
 
   // Extract the final text response
-  const textOutput = interaction.outputs?.find((o) => o.type === "text");
+  const textOutput = interaction.outputs?.find(
+    (output) => output.type === "text",
+  );
 
   return {
     content: {
@@ -84,6 +83,30 @@ export async function processMessage(
   };
 }
 
+function getToolResult(
+  functionCallOutput: Interactions.FunctionCallContent,
+): string {
+  if (functionCallOutput.name === "get_weather") {
+    return getWeather(JSON.stringify(functionCallOutput.arguments.location));
+  }
+  if (functionCallOutput.name === "get_data_sources") {
+    return getDataSources();
+  }
+  return "Not found tool to get result";
+}
+
 function getWeather(location: string) {
   return `The weather in ${location} is sunny.`;
+}
+
+function getDataSources(): string {
+  const dataSources = [
+    {
+      name: "Alice The Trader",
+      description: "Expert in cryptocurrency trading and market analysis.",
+      type: "TELEGRAM_CHANNEL",
+      price: "0.01 USD",
+    },
+  ];
+  return JSON.stringify(dataSources);
 }
