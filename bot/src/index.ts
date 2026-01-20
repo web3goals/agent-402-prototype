@@ -252,7 +252,7 @@ async function startApp(): Promise<void> {
     startCronScheduler();
 
     // Start Telegram bot
-    // startTelegramBot();
+    // startTelegramBot(); // TODO: Uncomment when Telegram bot functionality is needed
 
     logger.info("[App] Application started successfully");
 
