@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Content } from "@google/genai";
-import { SmileIcon, UserIcon } from "lucide-react";
+import { SmileIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 interface ChatMessage extends Content {
   id: string;
@@ -87,7 +87,7 @@ export default function ChatPage() {
     <div className="max-w-xl mx-auto h-[calc(100vh-(--spacing(42)))] flex flex-col px-4 py-8">
       {/* Messages */}
       <Card className="flex-1 mb-4 p-4 overflow-hidden flex flex-col bg-background border-border">
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 h-full">
           <div className="space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground mt-10">
