@@ -5,19 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import type { Content } from "@google/genai";
+import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { SmileIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-interface ChatMessage extends Content {
-  id: string;
-}
-
 export default function ChatPage() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [interactionId, setInteractionId] = useState<string | undefined>(
-    undefined,
-  );
+  const [messages, setMessages] = useState<BaseMessage[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -32,51 +25,44 @@ export default function ChatPage() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      role: "user",
-      parts: [{ text: input }],
-    };
+    const userMessage = new HumanMessage(input);
 
-    setMessages((prev) => [...prev, userMessage]);
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput("");
     setIsLoading(true);
 
     try {
+      // Create payload with message history
+      // We map the BaseMessages to a simple format for the API
+      const payloadMessages = newMessages.map((m) => ({
+        type: m.type, // "human" or "ai"
+        content: m.content,
+      }));
+
       const response = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input, interactionId: interactionId }),
+        body: JSON.stringify({ messages: payloadMessages }),
       });
 
       const data = await response.json();
 
       if (data.isSuccess && data.data) {
-        if (data.data.interactionId) {
-          setInteractionId(data.data.interactionId);
-        }
-        const aiMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: data.data.role || "model",
-          parts: data.data.parts || [{ text: data.data.content }],
-        };
+        const aiMessage = new AIMessage(data.data.content);
         setMessages((prev) => [...prev, aiMessage]);
       } else {
         // Handle error case
-        const errorMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          role: "model",
-          parts: [{ text: "Sorry, something went wrong. Please try again." }],
-        };
+        const errorMessage = new AIMessage(
+          "Sorry, something went wrong. Please try again.",
+        );
         setMessages((prev) => [...prev, errorMessage]);
       }
     } catch (error) {
       console.error("Failed to send message", error);
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        role: "model",
-        parts: [{ text: "Network error. Please check your connection." }],
-      };
+      const errorMessage = new AIMessage(
+        "Network error. Please check your connection.",
+      );
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
       setIsLoading(false);
@@ -95,14 +81,14 @@ export default function ChatPage() {
               </div>
             )}
 
-            {messages.map((m) => (
+            {messages.map((message, index) => (
               <div
-                key={m.id}
+                key={index}
                 className={`flex gap-3 ${
-                  m.role === "user" ? "justify-end" : "justify-start"
+                  message.type === "human" ? "justify-end" : "justify-start"
                 }`}
               >
-                {m.role === "model" && (
+                {message.type !== "human" && (
                   <Avatar className="size-8">
                     <AvatarImage src="/images/avatar.png" alt="Avatar" />
                   </Avatar>
@@ -110,17 +96,19 @@ export default function ChatPage() {
 
                 <div
                   className={`p-3 rounded-lg max-w-[80%] whitespace-pre-wrap ${
-                    m.role === "user"
+                    message.type === "human"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground"
                   }`}
                 >
                   <p className="text-sm leading-relaxed">
-                    {m.parts?.map((p) => p.text).join("")}
+                    {typeof message.content === "string"
+                      ? message.content
+                      : JSON.stringify(message.content)}
                   </p>
                 </div>
 
-                {m.role === "user" && (
+                {message.type === "human" && (
                   <Avatar className="size-8">
                     <AvatarFallback className="bg-accent">
                       <SmileIcon className="size-4" />

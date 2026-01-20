@@ -1,5 +1,6 @@
 import { processMessage } from "@/lib/agent";
 import { createFailedApiResponse, createSuccessApiResponse } from "@/lib/api";
+import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import axios from "axios";
 import { NextRequest } from "next/server";
 import z from "zod";
@@ -10,8 +11,12 @@ export async function POST(request: NextRequest) {
 
     // Define the schema for request body validation
     const bodySchema = z.object({
-      message: z.string(),
-      interactionId: z.string().optional(),
+      messages: z.array(
+        z.object({
+          type: z.enum(["human", "ai"]),
+          content: z.string(),
+        }),
+      ),
     });
 
     // Extract request body
@@ -31,16 +36,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract validated data
-    const { message, interactionId } = bodyParseResult.data;
+    const { messages: rawMessages } = bodyParseResult.data;
 
-    // Process the message
-    const { content: responseContent, interactionId: responseInteractionId } =
-      await processMessage(message, interactionId);
+    // Convert to LangChain messages
+    const chatMessages: BaseMessage[] = rawMessages.map((m) => {
+      if (m.type === "ai") {
+        return new AIMessage(m.content);
+      } else {
+        return new HumanMessage(m.content);
+      }
+    });
 
+    // Process the message history
+    const responseMessage = await processMessage(chatMessages);
+
+    // Return the result
     return createSuccessApiResponse({
-      role: responseContent.role,
-      parts: responseContent.parts,
-      interactionId: responseInteractionId,
+      type: responseMessage.type,
+      content: responseMessage.content,
     });
   } catch (error) {
     console.error(
