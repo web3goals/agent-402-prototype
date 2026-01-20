@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { Content } from "@google/genai";
+import { SmileIcon, UserIcon } from "lucide-react";
 
 interface ChatMessage extends Content {
   id: string;
@@ -83,15 +84,17 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-(--spacing(16)))] w-full max-w-3xl mx-auto p-4">
+    <div className="max-w-xl mx-auto h-[calc(100vh-(--spacing(42)))] flex flex-col px-4 py-8">
+      {/* Messages */}
       <Card className="flex-1 mb-4 p-4 overflow-hidden flex flex-col bg-background border-border">
-        <ScrollArea className="flex-1 pr-4">
+        <ScrollArea className="flex-1">
           <div className="space-y-4">
             {messages.length === 0 && (
               <div className="text-center text-muted-foreground mt-10">
-                <p>Start a conversation with the AI Agent.</p>
+                <p>Start a conversation with the Agent 402</p>
               </div>
             )}
+
             {messages.map((m) => (
               <div
                 key={m.id}
@@ -100,9 +103,8 @@ export default function ChatPage() {
                 }`}
               >
                 {m.role === "model" && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src="/bot-avatar.png" alt="AI" />
-                    <AvatarFallback>AI</AvatarFallback>
+                  <Avatar className="size-8">
+                    <AvatarImage src="/images/avatar.png" alt="Avatar" />
                   </Avatar>
                 )}
 
@@ -119,16 +121,18 @@ export default function ChatPage() {
                 </div>
 
                 {m.role === "user" && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>ME</AvatarFallback>
+                  <Avatar className="size-8">
+                    <AvatarFallback className="bg-accent">
+                      <SmileIcon className="size-4" />
+                    </AvatarFallback>
                   </Avatar>
                 )}
               </div>
             ))}
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback>AI</AvatarFallback>
+                <Avatar className="size-8">
+                  <AvatarImage src="/images/avatar.png" alt="Avatar" />
                 </Avatar>
                 <div className="bg-muted p-3 rounded-lg">
                   <div className="flex space-x-2">
@@ -144,6 +148,7 @@ export default function ChatPage() {
         </ScrollArea>
       </Card>
 
+      {/* Input */}
       <div className="flex gap-2">
         <Input
           placeholder="Type your message..."

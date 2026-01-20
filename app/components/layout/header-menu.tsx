@@ -1,7 +1,7 @@
 "use client";
 
-import { LogInIcon, UserIcon } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { LogInIcon, SmileIcon } from "lucide-react";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import {
   DropdownMenu,
@@ -16,12 +16,11 @@ export function HeaderMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline">
           <Avatar className="size-6">
-            <AvatarImage src="" className="object-cover w-full h-full" />
             <AvatarFallback className="bg-accent">
-              <UserIcon className="size-3 text-accent-foreground" />
+              <SmileIcon className="size-3" />
             </AvatarFallback>
           </Avatar>
-          Demo
+          Demo user
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
