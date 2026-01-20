@@ -1,12 +1,8 @@
+import { processMessage } from "@/lib/agent";
 import { createFailedApiResponse, createSuccessApiResponse } from "@/lib/api";
-import { GoogleGenAI } from "@google/genai";
 import axios from "axios";
 import { NextRequest } from "next/server";
 import z from "zod";
-
-function getWeather(location: string) {
-  return `The weather in ${location} is sunny.`;
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +11,7 @@ export async function POST(request: NextRequest) {
     // Define the schema for request body validation
     const bodySchema = z.object({
       message: z.string(),
-      conversationId: z.string().optional(),
+      interactionId: z.string().optional(),
     });
 
     // Extract request body
@@ -35,78 +31,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract validated data
-    const { message, conversationId } = bodyParseResult.data;
+    const { message, interactionId } = bodyParseResult.data;
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-    // 2. Send the request with tools
-    let interaction = await ai.interactions.create({
-      model: "gemini-3-flash-preview",
-      previous_interaction_id: conversationId,
-      input: message,
-      tools: [
-        {
-          type: "function",
-          name: "get_weather",
-          description: "Gets the weather for a given location.",
-          parameters: {
-            type: "object",
-            properties: {
-              location: {
-                type: "string",
-                description: "The city and state, e.g. San Francisco, CA",
-              },
-            },
-            required: ["location"],
-          },
-        },
-      ],
-    });
-
-    // Handle tool calls in a loop
-    let hasToolCalls = true;
-    while (hasToolCalls) {
-      hasToolCalls = false;
-
-      const functionCallOutput = interaction.outputs?.find(
-        (o) => o.type === "function_call",
-      );
-
-      if (functionCallOutput) {
-        hasToolCalls = true; // Continue loop if we find a tool call
-        console.log(
-          `Tool Call: ${functionCallOutput.name}(${JSON.stringify(functionCallOutput.arguments)})`,
-        );
-
-        // Execute your actual function here
-        const result = getWeather(
-          JSON.stringify(functionCallOutput.arguments.location),
-        );
-
-        // Send result back to the model
-        interaction = await ai.interactions.create({
-          model: "gemini-3-flash-preview",
-          previous_interaction_id: interaction.id,
-          input: [
-            {
-              type: "function_result",
-              name: functionCallOutput.name,
-              call_id: functionCallOutput.id,
-              result: result,
-            },
-          ],
-        });
-      }
-    }
-
-    // Extract the final text response
-    const textOutput = interaction.outputs?.find((o) => o.type === "text");
-    const content = textOutput?.text || "No response text found";
+    // Process the message
+    const { content: responseContent, interactionId: responseInteractionId } =
+      await processMessage(message, interactionId);
 
     return createSuccessApiResponse({
-      role: "model",
-      parts: [{ text: content }],
-      conversationId: interaction.id,
+      role: responseContent.role,
+      parts: responseContent.parts,
+      interactionId: responseInteractionId,
     });
   } catch (error) {
     console.error(
@@ -114,8 +48,8 @@ export async function POST(request: NextRequest) {
       axios.isAxiosError(error)
         ? error.response?.data || error.message
         : error instanceof Error
-          ? error.message
-          : String(error),
+        ? error.message
+        : String(error),
     );
     return createFailedApiResponse(
       { message: "Internal server error, try again later" },

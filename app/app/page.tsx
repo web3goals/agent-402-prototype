@@ -14,7 +14,7 @@ interface ChatMessage extends Content {
 
 export default function HomePage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [conversationId, setConversationId] = useState<string | undefined>(
+  const [interactionId, setInteractionId] = useState<string | undefined>(
     undefined,
   );
   const [input, setInput] = useState("");
@@ -45,14 +45,14 @@ export default function HomePage() {
       const response = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input, conversationId }),
+        body: JSON.stringify({ message: input, interactionId: interactionId }),
       });
 
       const data = await response.json();
 
       if (data.isSuccess && data.data) {
-        if (data.data.conversationId) {
-          setConversationId(data.data.conversationId);
+        if (data.data.interactionId) {
+          setInteractionId(data.data.interactionId);
         }
         const aiMessage: ChatMessage = {
           id: (Date.now() + 1).toString(),
