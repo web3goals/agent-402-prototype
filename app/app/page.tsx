@@ -35,7 +35,7 @@ export default function IndexPage() {
         streams
       </h4>
       {/* Buttons */}
-      <div className="flex flex-col md:flex-row gap-2 items-center justify-center mt-4">
+      <div className="flex flex-col md:flex-row gap-4 items-center justify-center mt-4">
         <Link href="/chat">
           <Button variant="default" size="lg">
             <MessageSquareMoreIcon />

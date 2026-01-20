@@ -11,7 +11,7 @@ export function Footer() {
         <p className="text-balance text-center md:text-left text-sm leading-loose text-muted-foreground">
           Built by
           <Link href={appConfig.developer.url} target="_blank">
-            <Button variant="link" className="p-1">
+            <Button variant="link" className="px-2 py-0">
               {appConfig.developer.name}
             </Button>
           </Link>
