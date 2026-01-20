@@ -12,7 +12,7 @@ export async function processMessage(
 
   // Send the request with tools
   let interaction = await ai.interactions.create({
-    model: "gemini-3-flash-preview",
+    model: "gemini-2.5-flash",
     previous_interaction_id: interactionId,
     input: message,
     tools: [
@@ -58,7 +58,7 @@ export async function processMessage(
 
       // Send result back to the model
       interaction = await ai.interactions.create({
-        model: "gemini-3-flash-preview",
+        model: "gemini-2.5-flash",
         previous_interaction_id: interaction.id,
         input: [
           {
