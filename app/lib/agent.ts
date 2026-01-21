@@ -2,7 +2,7 @@ import { BaseMessage } from "@langchain/core/messages";
 import { ChatOpenAI } from "@langchain/openai";
 import { createAgent, tool } from "langchain";
 import { z } from "zod";
-import { getDataSources, getWeather } from "./tools";
+import { getDataSourcePosts, getDataSources } from "./tools";
 
 const model = new ChatOpenAI({
   model: "google/gemini-3-flash-preview",
@@ -13,23 +13,26 @@ const model = new ChatOpenAI({
   temperature: 0,
 });
 
-const getWeatherTool = tool(async (input) => await getWeather(input.location), {
-  name: "get_weather",
-  description: "Gets the weather for a given location.",
-  schema: z.object({
-    location: z.string().describe("The city and state, e.g. San Francisco, CA"),
-  }),
-});
-
 const getDataSourcesTool = tool(async () => await getDataSources(), {
   name: "get_data_sources",
   description: "Gets a list of available data sources.",
   schema: z.object({}),
 });
 
+const getDataSourcePostsTool = tool(
+  async (input) => await getDataSourcePosts(input.dataSource),
+  {
+    name: "get_data_source_posts",
+    description: "Gets posts from a specific data source.",
+    schema: z.object({
+      dataSource: z.string().describe("The name of the data source"),
+    }),
+  },
+);
+
 const agent = createAgent({
   model,
-  tools: [getWeatherTool, getDataSourcesTool],
+  tools: [getDataSourcesTool, getDataSourcePostsTool],
   systemPrompt: "You are a helpful assistant.",
 });
 
