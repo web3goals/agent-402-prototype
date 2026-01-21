@@ -7,17 +7,19 @@ import { Server } from "http";
 import * as cron from "node-cron";
 import TelegramBot from "node-telegram-bot-api";
 import { logger } from "./utils/logger";
+import { getDataSourcePosts, getDataSources } from "./utils/data-source";
 
 const app = express();
 
-const PORT = process.env.PORT || 8000;
+const APP_PORT = process.env.PORT || 8000;
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_SUBSCRIBERS = [67916468];
 
-const FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
-const SELLER_WALLET = process.env.SELLER_WALLET;
-const USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // TODO: Update value for mainnet if needed
+const X402_FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
+const X402_SELLER_WALLET = process.env.SELLER_WALLET;
+const X402_NETWORK = "cronos-testnet";
+const X402_USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // Cronos Testnet
 
 let server: Server | undefined;
 let greetingTask: cron.ScheduledTask | undefined;
@@ -28,31 +30,25 @@ app.use(express.json());
 
 // API endpoint to check server health
 app.get("/api/health", (_req: Request, res: Response) => {
-  logger.info("[API] Received request for /api/health");
+  logger.info("[API] Received get request for /api/health");
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
   });
 });
 
-app.post("/api/posts/purchases", async (_req: Request, res: Response) => {
-  logger.info("[API] Received request for /api/posts/purchases");
+// API endpoint to get data sources
+app.get("/api/data-sources", async (_req: Request, res: Response) => {
+  logger.info("[API] Received get request for /api/data-sources");
 
-  if (bot) {
-    for (const subscriber of TELEGRAM_SUBSCRIBERS) {
-      await bot.sendMessage(subscriber, "New purchase!");
-    }
-  }
+  const dataSources = await getDataSources();
 
-  res.json({
-    status: "ok",
-    timestamp: new Date().toISOString(),
-  });
+  res.status(200).json({ dataSources });
 });
 
-// API endpoint to get posts
-app.get("/api/posts", async (req: Request, res: Response) => {
-  logger.info("[API] Received request for /api/posts");
+// API endpoint to get data source posts with payment verification
+app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
+  logger.info("[API] Received request for /api/data-sources/posts");
 
   const paymentHeader =
     req.headers["X-PAYMENT"] ||
@@ -66,9 +62,9 @@ app.get("/api/posts", async (req: Request, res: Response) => {
       x402Version: 1,
       paymentRequirements: {
         scheme: "exact",
-        network: "cronos-testnet", // Switch to 'cronos' for mainnet
-        payTo: SELLER_WALLET,
-        asset: USDCE_CONTRACT,
+        network: X402_NETWORK, // Switch to 'cronos' for mainnet
+        payTo: X402_SELLER_WALLET,
+        asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
         maxAmountRequired: "100000", // 0.1 USDC.e (6 decimals)
@@ -83,9 +79,9 @@ app.get("/api/posts", async (req: Request, res: Response) => {
       paymentHeader: paymentHeader,
       paymentRequirements: {
         scheme: "exact",
-        network: "cronos-testnet", // Same network as in 402 response
-        payTo: SELLER_WALLET,
-        asset: USDCE_CONTRACT,
+        network: X402_NETWORK,
+        payTo: X402_SELLER_WALLET,
+        asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
         maxAmountRequired: "100000", // 0.1 USDC.e (6 decimals)
@@ -95,7 +91,7 @@ app.get("/api/posts", async (req: Request, res: Response) => {
 
     // Step 2: Verify payment
     const verifyResponse = await axios.post(
-      `${FACILITATOR_URL}/verify`,
+      `${X402_FACILITATOR_URL}/verify`,
       requestBody,
       {
         headers: { "Content-Type": "application/json", "X402-Version": "1" },
@@ -111,7 +107,7 @@ app.get("/api/posts", async (req: Request, res: Response) => {
 
     // Step 3: Settle payment
     const settleResponse = await axios.post(
-      `${FACILITATOR_URL}/settle`,
+      `${X402_FACILITATOR_URL}/settle`,
       requestBody,
       {
         headers: { "Content-Type": "application/json", "X402-Version": "1" },
@@ -120,12 +116,10 @@ app.get("/api/posts", async (req: Request, res: Response) => {
 
     // Step 4: Check settlement and return content
     if (settleResponse.data.event === "payment.settled") {
-      const posts: string[] = ["Hello!", "This is paid content!"];
+      const posts = await getDataSourcePosts();
 
       return res.status(200).json({
-        data: {
-          posts,
-        },
+        posts,
         payment: {
           txHash: settleResponse.data.txHash,
           from: settleResponse.data.from,
@@ -153,11 +147,30 @@ app.get("/api/posts", async (req: Request, res: Response) => {
   }
 });
 
+// API endpoint to handle data source purchase notifications
+app.post(
+  "/api/data-sources/purchases",
+  async (_req: Request, res: Response) => {
+    logger.info("[API] Received post request for /api/data-sources/purchases");
+
+    if (bot) {
+      for (const subscriber of TELEGRAM_SUBSCRIBERS) {
+        await bot.sendMessage(subscriber, "New purchase!");
+      }
+    }
+
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    });
+  },
+);
+
 async function startServer(): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
-      server = app.listen(PORT, () => {
-        logger.info(`[Server] Express server is running on port ${PORT}`);
+      server = app.listen(APP_PORT, () => {
+        logger.info(`[Server] Express server is running on port ${APP_PORT}`);
         resolve();
       });
 
