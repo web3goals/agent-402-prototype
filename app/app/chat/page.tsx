@@ -9,6 +9,7 @@ import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { SmileIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
+// TODO: Render markdown messages properly
 export default function ChatPage() {
   const [messages, setMessages] = useState<BaseMessage[]>([]);
   const [input, setInput] = useState("");
