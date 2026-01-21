@@ -32,7 +32,7 @@ export default function IndexPage() {
       <h4 className="text-xl text-muted-foreground tracking-tight text-center mt-2">
         An AI agent for Cronos EVM that utilizes the x402 protocol to execute
         trades powered by private Telegram channels and other premium data
-        streams
+        sources
       </h4>
       {/* Buttons */}
       <div className="flex flex-col md:flex-row gap-4 items-center justify-center mt-4">
@@ -57,7 +57,7 @@ export default function IndexPage() {
             <GlobeIcon className="size-5" />
           </ItemMedia>
           <ItemContent>
-            <ItemTitle>12 data streams</ItemTitle>
+            <ItemTitle>12 data sources</ItemTitle>
           </ItemContent>
         </Item>
         <Item variant="outline">
