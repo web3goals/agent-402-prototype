@@ -3,6 +3,8 @@ import { ChatOpenAI } from "@langchain/openai";
 import { createAgent, tool } from "langchain";
 import { z } from "zod";
 import {
+  disableDegenMode,
+  enableDegenMode,
   executeBuyTrade,
   getDataSourcePosts,
   getDataSources,
@@ -53,6 +55,25 @@ const executeBuyTradeTool = tool(
   },
 );
 
+const enableDegenModeTool = tool(
+  async (input) => await enableDegenMode(input.style),
+  {
+    name: "enable_degen_mode",
+    description: "Enables degen mode with a specified style.",
+    schema: z.object({
+      style: z
+        .enum(["CONSERVATIVE", "AGGRESSIVE"])
+        .describe("The style of degen mode"),
+    }),
+  },
+);
+
+const disableDegenModeTool = tool(async () => await disableDegenMode(), {
+  name: "disable_degen_mode",
+  description: "Disables degen mode.",
+  schema: z.object({}),
+});
+
 const systemPrompt = `
 # Context
 
@@ -93,6 +114,8 @@ const agent = createAgent({
     getDataSourcesTool,
     getDataSourcePostsTool,
     executeBuyTradeTool,
+    enableDegenModeTool,
+    disableDegenModeTool,
   ],
   systemPrompt,
 });

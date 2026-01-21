@@ -70,3 +70,17 @@ export async function executeBuyTrade(outputToken: string): Promise<string> {
 
   return JSON.stringify(trade);
 }
+
+export async function enableDegenMode(
+  style: "CONSERVATIVE" | "AGGRESSIVE",
+): Promise<string> {
+  const status = { degenMode: "enabled", style };
+
+  return JSON.stringify(status);
+}
+
+export async function disableDegenMode(): Promise<string> {
+  const status = { degenMode: "disabled" };
+
+  return JSON.stringify(status);
+}
