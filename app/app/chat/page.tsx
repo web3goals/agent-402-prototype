@@ -9,6 +9,7 @@ import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { SmileIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 
 export default function ChatPage() {
@@ -97,16 +98,16 @@ export default function ChatPage() {
                 )}
 
                 <div
-                  className={`p-3 rounded-lg max-w-[80%] ${
+                  className={`p-3 rounded-lg max-w-[80%] min-w-0 ${
                     message.type === "human"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground"
                   }`}
                 >
-                  <div className="text-sm leading-relaxed overflow-hidden prose prose-sm dark:prose-invert max-w-none break-all [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>ul]:my-4 [&>ul:first-child]:mt-0 [&>ul:last-child]:mb-0 [&>ol]:my-4 [&>ol:first-child]:mt-0 [&>ol:last-child]:mb-0">
+                  <div className="text-sm leading-relaxed overflow-hidden prose prose-sm dark:prose-invert max-w-none wrap-anywhere [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>ul]:my-4 [&>ul:first-child]:mt-0 [&>ul:last-child]:mb-0 [&>ol]:my-4 [&>ol:first-child]:mt-0 [&>ol:last-child]:mb-0">
                     {typeof message.content === "string" ? (
                       <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
+                        remarkPlugins={[remarkGfm, remarkBreaks]}
                         components={{
                           pre: ({ node, ...props }) => {
                             void node;
