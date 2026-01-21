@@ -1,3 +1,23 @@
+export async function getStatus(): Promise<string> {
+  const status = {
+    address: "0x758190cE14e736A93C88063b5325B72b8e159C51",
+    balance: "42",
+    tokens: [
+      {
+        address: "0x2d03bece6747adc00e1a131bba1469c15fd11e03",
+        amount: "0.13",
+      },
+    ],
+    buyTrades: [
+      {
+        executed: new Date().toISOString(),
+      },
+    ],
+  };
+
+  return JSON.stringify(status);
+}
+
 export async function getDataSources(): Promise<string> {
   const dataSources: {
     name: string;
@@ -12,6 +32,7 @@ export async function getDataSources(): Promise<string> {
       price: "0.01 USD",
     },
   ];
+
   return JSON.stringify(dataSources);
 }
 
@@ -31,5 +52,21 @@ export async function getDataSourcePosts(dataSource: string): Promise<string> {
     },
   ];
 
-  return JSON.stringify(dataSourcePosts);
+  const payment = {
+    token: "0xf951eC28187D9E5Ca673Da8FE6757E6f0Be5F77C",
+    amount: "100000",
+  };
+
+  return JSON.stringify({ dataSource, dataSourcePosts, payment });
+}
+
+export async function executeBuyTrade(outputToken: string): Promise<string> {
+  const trade = {
+    inputToken: "NATIVE",
+    outputToken: outputToken,
+    amount: "1",
+    tx: "0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df3e8250b64aa5f22da",
+  };
+
+  return JSON.stringify(trade);
 }
