@@ -14,7 +14,7 @@ export async function POST() {
     const chainId = BuiltInChainId.CRONOS_MAINNET;
     const inputToken = "NATIVE"; // VVS
     const outputToken = "0x2D03bECE6747ADC00E1a131BBA1469C15fD11e03"; // VVS
-    const amount = "1.0";
+    const amount = "0.1";
     const clientId = process.env.VVS_FINANCE_CLIENT_ID;
 
     const trade = await fetchBestTrade(

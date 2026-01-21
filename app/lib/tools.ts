@@ -64,7 +64,7 @@ export async function executeBuyTrade(outputToken: string): Promise<string> {
   const trade = {
     inputToken: "NATIVE",
     outputToken: outputToken,
-    amount: "1",
+    amount: "0.1",
     tx: "0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df3e8250b64aa5f22da",
   };
 
