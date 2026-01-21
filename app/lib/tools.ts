@@ -1,7 +1,7 @@
 import { DataSource, DataSourcePost } from "@/types/data-source";
 import axios from "axios";
 
-export async function getStatus(): Promise<string> {
+export async function getDemoStatus(): Promise<string> {
   const status = {
     address: "0x758190cE14e736A93C88063b5325B72b8e159C51",
     balance: "32.877",
@@ -25,7 +25,7 @@ export async function getStatus(): Promise<string> {
   return JSON.stringify(status);
 }
 
-export async function getDataSources(): Promise<string> {
+export async function getDemoDataSources(): Promise<string> {
   const dataSources: DataSource[] = [
     {
       id: "697113179979539ef20d9c3a",
@@ -39,7 +39,9 @@ export async function getDataSources(): Promise<string> {
   return JSON.stringify(dataSources);
 }
 
-export async function getDataSourcePosts(dataSource: string): Promise<string> {
+export async function getDemoDataSourcePosts(
+  dataSource: string,
+): Promise<string> {
   await axios.get("http://localhost:8000/api/data-sources/free-posts");
 
   const dataSourcePosts: DataSourcePost[] = [
@@ -65,7 +67,9 @@ export async function getDataSourcePosts(dataSource: string): Promise<string> {
   return JSON.stringify({ dataSource, dataSourcePosts, payment });
 }
 
-export async function executeBuyTrade(outputToken: string): Promise<string> {
+export async function executeDemoBuyTrade(
+  outputToken: string,
+): Promise<string> {
   const trade = {
     executed: new Date().toISOString(),
     inputToken: "NATIVE",
@@ -77,7 +81,7 @@ export async function executeBuyTrade(outputToken: string): Promise<string> {
   return JSON.stringify(trade);
 }
 
-export async function enableLamboMode(
+export async function enableDemoLamboMode(
   style: "CONSERVATIVE" | "AGGRESSIVE",
 ): Promise<string> {
   const status = { enabled: true, style };
@@ -85,7 +89,7 @@ export async function enableLamboMode(
   return JSON.stringify(status);
 }
 
-export async function disableLamboMode(): Promise<string> {
+export async function disableDemoLamboMode(): Promise<string> {
   const status = { enabled: false };
 
   return JSON.stringify(status);

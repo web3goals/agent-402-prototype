@@ -3,12 +3,12 @@ import { ChatOpenAI } from "@langchain/openai";
 import { createAgent, tool } from "langchain";
 import { z } from "zod";
 import {
-  disableLamboMode,
-  enableLamboMode,
-  executeBuyTrade,
-  getDataSourcePosts,
-  getDataSources,
-  getStatus,
+  disableDemoLamboMode,
+  enableDemoLamboMode,
+  executeDemoBuyTrade,
+  getDemoDataSourcePosts,
+  getDemoDataSources,
+  getDemoStatus,
 } from "./tools";
 
 const model = new ChatOpenAI({
@@ -20,14 +20,14 @@ const model = new ChatOpenAI({
   temperature: 0,
 });
 
-const getStatusTool = tool(async () => await getStatus(), {
+const getStatusTool = tool(async () => await getDemoStatus(), {
   name: "get_status",
   description:
     "Retrieves the agent's current status, including its wallet address, native token balance, token holdings, and recent trade history.",
   schema: z.object({}),
 });
 
-const getDataSourcesTool = tool(async () => await getDataSources(), {
+const getDataSourcesTool = tool(async () => await getDemoDataSources(), {
   name: "get_data_sources",
   description:
     "Retrieves a list of available premium data sources (e.g., private Telegram channels) that can be accessed via the x402 protocol.",
@@ -35,7 +35,7 @@ const getDataSourcesTool = tool(async () => await getDataSources(), {
 });
 
 const getDataSourcePostsTool = tool(
-  async (input) => await getDataSourcePosts(input.dataSource),
+  async (input) => await getDemoDataSourcePosts(input.dataSource),
   {
     name: "get_data_source_posts",
     description:
@@ -51,7 +51,7 @@ const getDataSourcePostsTool = tool(
 );
 
 const executeBuyTradeTool = tool(
-  async (input) => await executeBuyTrade(input.outputToken),
+  async (input) => await executeDemoBuyTrade(input.outputToken),
   {
     name: "execute_buy_trade",
     description:
@@ -67,7 +67,7 @@ const executeBuyTradeTool = tool(
 );
 
 const enableLamboModeTool = tool(
-  async (input) => await enableLamboMode(input.style),
+  async (input) => await enableDemoLamboMode(input.style),
   {
     name: "enable_lambo_mode",
     description:
@@ -82,7 +82,7 @@ const enableLamboModeTool = tool(
   },
 );
 
-const disableLamboModeTool = tool(async () => await disableLamboMode(), {
+const disableLamboModeTool = tool(async () => await disableDemoLamboMode(), {
   name: "disable_lambo_mode",
   description:
     "Disables 'Lambo Mode', returning the agent to manual operation.",
