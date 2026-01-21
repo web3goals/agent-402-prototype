@@ -148,10 +148,10 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
 });
 
 // API endpoint to handle data source purchase notifications
-app.post(
-  "/api/data-sources/purchases",
+app.get(
+  "/api/data-sources/free-posts",
   async (_req: Request, res: Response) => {
-    logger.info("[API] Received post request for /api/data-sources/purchases");
+    logger.info("[API] Received get request for /api/data-sources/free-posts");
 
     if (bot) {
       const text = `
@@ -164,10 +164,9 @@ https://explorer.cronos.org/tx/0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df
       }
     }
 
-    res.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-    });
+    const posts = await getDataSourcePosts();
+
+    res.json(posts);
   },
 );
 
@@ -229,7 +228,7 @@ function startTelegramBot(): void {
     const text = msg.text || msg.caption || "Undefined text";
 
     logger.info(
-      `[Telegram] New message, chat: ${chat}, user: ${user}, text: ${text}`,
+      `[Telegram] New message, chat: ${chat}, user: ${user}, text: ${text.slice(0, 32)}`,
     );
 
     let response = "👌";

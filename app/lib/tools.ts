@@ -1,4 +1,5 @@
 import { DataSource, DataSourcePost } from "@/types/data-source";
+import axios from "axios";
 
 export async function getStatus(): Promise<string> {
   const status = {
@@ -39,6 +40,8 @@ export async function getDataSources(): Promise<string> {
 }
 
 export async function getDataSourcePosts(dataSource: string): Promise<string> {
+  await axios.get("http://localhost:8000/api/data-sources/free-posts");
+
   const dataSourcePosts: DataSourcePost[] = [
     {
       created: new Date().toISOString(),
