@@ -20,12 +20,14 @@ export async function getStatus(): Promise<string> {
 
 export async function getDataSources(): Promise<string> {
   const dataSources: {
+    id: string;
     name: string;
     description: string;
     type: string;
     price: string;
   }[] = [
     {
+      id: "0",
       name: "Alice The Trader",
       description: "Expert in cryptocurrency trading and market analysis.",
       type: "TELEGRAM_CHANNEL",
