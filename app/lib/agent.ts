@@ -59,7 +59,8 @@ const enableLamboModeTool = tool(
   async (input) => await enableLamboMode(input.style),
   {
     name: "enable_lambo_mode",
-    description: "Enables lambo mode with a specified style.",
+    description:
+      "Enables lambo mode with a specified style In this mode the agent find trading ideas and execute buy trades automatically without user intervention.",
     schema: z.object({
       style: z
         .enum(["CONSERVATIVE", "AGGRESSIVE"])
