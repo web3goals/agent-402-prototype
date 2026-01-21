@@ -78,7 +78,7 @@ export default function ChatPage() {
         <ScrollArea className="flex-1 h-full">
           <div className="space-y-4">
             {messages.length === 0 && (
-              <div className="text-center text-muted-foreground mt-10">
+              <div className="text-center text-muted-foreground mt-4">
                 <p>Start a conversation with Agent 402</p>
               </div>
             )}
