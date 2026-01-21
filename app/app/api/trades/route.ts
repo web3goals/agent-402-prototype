@@ -1,11 +1,11 @@
 import { createFailedApiResponse, createSuccessApiResponse } from "@/lib/api";
-import axios from "axios";
 import {
+  BuiltInChainId,
   fetchBestTrade,
   PoolType,
-  BuiltInChainId,
   utils as SwapSdkUtils,
 } from "@vvs-finance/swap-sdk";
+import axios from "axios";
 
 export async function POST() {
   try {
@@ -15,9 +15,7 @@ export async function POST() {
     const inputToken = "NATIVE"; // VVS
     const outputToken = "0x2D03bECE6747ADC00E1a131BBA1469C15fD11e03"; // VVS
     const amount = "1.0";
-    const clientId = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"; // or set process.env.SWAP_SDK_QUOTE_API_CLIENT_ID_338 in nodejs
-
-    console.log("Here");
+    const clientId = process.env.VVS_FINANCE_CLIENT_ID;
 
     const trade = await fetchBestTrade(
       chainId,
