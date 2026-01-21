@@ -11,20 +11,39 @@ import { logger } from "./utils/logger";
 const app = express();
 
 const PORT = process.env.PORT || 8000;
+
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const TELEGRAM_SUBSCRIBERS = [67916468];
+
 const FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
 const SELLER_WALLET = process.env.SELLER_WALLET;
 const USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // TODO: Update value for mainnet if needed
 
-let server: Server;
-let greetingTask: cron.ScheduledTask;
-let bot: TelegramBot;
+let server: Server | undefined;
+let greetingTask: cron.ScheduledTask | undefined;
+let bot: TelegramBot | undefined;
 
 // Middleware
 app.use(express.json());
 
 // API endpoint to check server health
 app.get("/api/health", (_req: Request, res: Response) => {
+  logger.info("[API] Received request for /api/health");
+  res.json({
+    status: "ok",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.post("/api/posts/purchases", async (_req: Request, res: Response) => {
+  logger.info("[API] Received request for /api/posts/purchases");
+
+  if (bot) {
+    for (const subscriber of TELEGRAM_SUBSCRIBERS) {
+      await bot.sendMessage(subscriber, "New purchase!");
+    }
+  }
+
   res.json({
     status: "ok",
     timestamp: new Date().toISOString(),
@@ -174,7 +193,6 @@ function startCronScheduler(): void {
   logger.info("[Cron] Cron scheduler setup completed");
 }
 
-// @ts-ignore
 function startTelegramBot(): void {
   if (!TELEGRAM_BOT_TOKEN) {
     logger.error(
@@ -187,10 +205,22 @@ function startTelegramBot(): void {
 
   bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
+  bot.on("message", (msg) => {
+    const chat = msg.chat.id;
+    const user = msg.from?.username || "Unknown user";
+    const text = msg.text || msg.caption || "Undefined text";
+
+    logger.info(
+      `[Telegram] New message, chat: ${chat}, user: ${user}, text: ${text}`,
+    );
+
+    bot?.sendMessage(chat, "Message received!");
+  });
+
   // Listen for posts in channels where the bot is an admin
   bot.on("channel_post", (msg) => {
-    const channelName = msg.chat.title || "Unknown Channel";
-    const text = msg.text || msg.caption || "Unknown text";
+    const channelName = msg.chat.title || "Undefined channel";
+    const text = msg.text || msg.caption || "Undefined text";
 
     logger.info(
       `[Telegram] New post in channel, channel: ${channelName}, text: ${text}`,
@@ -252,7 +282,7 @@ async function startApp(): Promise<void> {
     startCronScheduler();
 
     // Start Telegram bot
-    // startTelegramBot(); // TODO: Uncomment when Telegram bot functionality is needed
+    startTelegramBot();
 
     logger.info("[App] Application started successfully");
 
