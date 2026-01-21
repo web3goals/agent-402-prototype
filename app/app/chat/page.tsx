@@ -8,8 +8,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
 import { SmileIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
-// TODO: Render markdown messages properly
 export default function ChatPage() {
   const [messages, setMessages] = useState<BaseMessage[]>([]);
   const [input, setInput] = useState("");
@@ -90,27 +91,52 @@ export default function ChatPage() {
                 }`}
               >
                 {message.type !== "human" && (
-                  <Avatar className="size-8">
+                  <Avatar className="size-8 shrink-0">
                     <AvatarImage src="/images/avatar.png" alt="Avatar" />
                   </Avatar>
                 )}
 
                 <div
-                  className={`p-3 rounded-lg max-w-[80%] whitespace-pre-wrap ${
+                  className={`p-3 rounded-lg max-w-[80%] ${
                     message.type === "human"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-foreground"
                   }`}
                 >
-                  <p className="text-sm leading-relaxed">
-                    {typeof message.content === "string"
-                      ? message.content
-                      : JSON.stringify(message.content)}
-                  </p>
+                  <div className="text-sm leading-relaxed overflow-hidden prose prose-sm dark:prose-invert max-w-none break-all [&>p]:my-4 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0 [&>ul]:my-4 [&>ul:first-child]:mt-0 [&>ul:last-child]:mb-0 [&>ol]:my-4 [&>ol:first-child]:mt-0 [&>ol:last-child]:mb-0">
+                    {typeof message.content === "string" ? (
+                      <ReactMarkdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          pre: ({ node, ...props }) => {
+                            void node;
+                            return (
+                              <div className="overflow-auto w-full my-2 bg-black/10 dark:bg-black/30 p-2 rounded-md">
+                                <pre {...props} />
+                              </div>
+                            );
+                          },
+                          code: ({ node, ...props }) => {
+                            void node;
+                            return (
+                              <code
+                                className="bg-black/10 dark:bg-black/30 rounded-sm px-1 py-0.5"
+                                {...props}
+                              />
+                            );
+                          },
+                        }}
+                      >
+                        {message.content}
+                      </ReactMarkdown>
+                    ) : (
+                      JSON.stringify(message.content)
+                    )}
+                  </div>
                 </div>
 
                 {message.type === "human" && (
-                  <Avatar className="size-8">
+                  <Avatar className="size-8 shrink-0">
                     <AvatarFallback className="bg-accent">
                       <SmileIcon className="size-4" />
                     </AvatarFallback>
@@ -120,7 +146,7 @@ export default function ChatPage() {
             ))}
             {isLoading && (
               <div className="flex gap-3 justify-start">
-                <Avatar className="size-8">
+                <Avatar className="size-8 shrink-0">
                   <AvatarImage src="/images/avatar.png" alt="Avatar" />
                 </Avatar>
                 <div className="bg-muted p-3 rounded-lg">
