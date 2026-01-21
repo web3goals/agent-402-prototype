@@ -154,8 +154,13 @@ app.post(
     logger.info("[API] Received post request for /api/data-sources/purchases");
 
     if (bot) {
+      const text = `
+New purchase 💸
+
+https://explorer.cronos.org/tx/0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df3e8250b64aa5f22da
+      `;
       for (const subscriber of TELEGRAM_SUBSCRIBERS) {
-        await bot.sendMessage(subscriber, "New purchase!");
+        await bot.sendMessage(subscriber, text);
       }
     }
 
@@ -227,7 +232,24 @@ function startTelegramBot(): void {
       `[Telegram] New message, chat: ${chat}, user: ${user}, text: ${text}`,
     );
 
-    bot?.sendMessage(chat, "Message received!");
+    let response = "👌";
+    if (text === "/start") {
+      response = `
+Hey 👋
+
+Ready to monetize your Telegram channel data with Agent 402?
+
+To get started, please send me the following details:
+
+- Channel link, name, and description
+- Price per fetching your posts (in USDC)
+- Your Cronos wallet address to receive payments
+
+⚠️ Don't forget to add me as an admin to your channel so I can access the posts!
+    `;
+    }
+
+    bot?.sendMessage(chat, response);
   });
 
   // Listen for posts in channels where the bot is an admin
