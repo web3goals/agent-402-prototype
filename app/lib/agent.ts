@@ -3,8 +3,8 @@ import { ChatOpenAI } from "@langchain/openai";
 import { createAgent, tool } from "langchain";
 import { z } from "zod";
 import {
-  disableDegenMode,
-  enableDegenMode,
+  disableLamboMode,
+  enableLamboMode,
   executeBuyTrade,
   getDataSourcePosts,
   getDataSources,
@@ -55,22 +55,22 @@ const executeBuyTradeTool = tool(
   },
 );
 
-const enableDegenModeTool = tool(
-  async (input) => await enableDegenMode(input.style),
+const enableLamboModeTool = tool(
+  async (input) => await enableLamboMode(input.style),
   {
-    name: "enable_degen_mode",
-    description: "Enables degen mode with a specified style.",
+    name: "enable_lambo_mode",
+    description: "Enables lambo mode with a specified style.",
     schema: z.object({
       style: z
         .enum(["CONSERVATIVE", "AGGRESSIVE"])
-        .describe("The style of degen mode"),
+        .describe("The style of lambo mode"),
     }),
   },
 );
 
-const disableDegenModeTool = tool(async () => await disableDegenMode(), {
-  name: "disable_degen_mode",
-  description: "Disables degen mode.",
+const disableLamboModeTool = tool(async () => await disableLamboMode(), {
+  name: "disable_lambo_mode",
+  description: "Disables lambo mode.",
   schema: z.object({}),
 });
 
@@ -114,8 +114,8 @@ const agent = createAgent({
     getDataSourcesTool,
     getDataSourcePostsTool,
     executeBuyTradeTool,
-    enableDegenModeTool,
-    disableDegenModeTool,
+    enableLamboModeTool,
+    disableLamboModeTool,
   ],
   systemPrompt,
 });

@@ -71,16 +71,16 @@ export async function executeBuyTrade(outputToken: string): Promise<string> {
   return JSON.stringify(trade);
 }
 
-export async function enableDegenMode(
+export async function enableLamboMode(
   style: "CONSERVATIVE" | "AGGRESSIVE",
 ): Promise<string> {
-  const status = { degenMode: "enabled", style };
+  const status = { enabled: true, style };
 
   return JSON.stringify(status);
 }
 
-export async function disableDegenMode(): Promise<string> {
-  const status = { degenMode: "disabled" };
+export async function disableLamboMode(): Promise<string> {
+  const status = { enabled: false };
 
   return JSON.stringify(status);
 }
