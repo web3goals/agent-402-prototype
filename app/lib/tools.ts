@@ -1,3 +1,5 @@
+import { DataSource, DataSourcePost } from "@/types/data-source";
+
 export async function getStatus(): Promise<string> {
   const status = {
     address: "0x758190cE14e736A93C88063b5325B72b8e159C51",
@@ -23,17 +25,11 @@ export async function getStatus(): Promise<string> {
 }
 
 export async function getDataSources(): Promise<string> {
-  const dataSources: {
-    id: string;
-    name: string;
-    description: string;
-    type: string;
-    price: string;
-  }[] = [
+  const dataSources: DataSource[] = [
     {
-      id: "0",
-      name: "Alice The Trader",
-      description: "Expert in cryptocurrency trading and market analysis.",
+      id: "697113179979539ef20d9c3a",
+      name: "Zero or Hero",
+      description: "100x signals for the financially reckless 🚀",
       type: "TELEGRAM_CHANNEL",
       price: "0.01 USD",
     },
@@ -43,7 +39,7 @@ export async function getDataSources(): Promise<string> {
 }
 
 export async function getDataSourcePosts(dataSource: string): Promise<string> {
-  const dataSourcePosts: { created: string; content: string }[] = [
+  const dataSourcePosts: DataSourcePost[] = [
     {
       created: new Date().toISOString(),
       content: `Bitcoin is currently facing a significant test of sentiment as it slips toward the $89,000 mark, driven largely by global "risk-off" movements and trade-related tensions. After a four-day losing streak—the longest since early January—all eyes are on the $88,000 short-term support level; a sustained hold here could pave the way for a recovery toward $92k, but a break lower risks a deeper retest of the $84k zone. With nearly $1 billion in leveraged positions liquidated across the market in the last 24 hours, volatility remains high, making this a critical "wait-and-see" zone for spot buyers.`,

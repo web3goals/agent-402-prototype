@@ -3,9 +3,9 @@ import { DataSource, DataSourcePost } from "../types/data-source";
 export async function getDataSources(): Promise<DataSource[]> {
   const dataSources: DataSource[] = [
     {
-      id: "0",
-      name: "Alice The Trader",
-      description: "Expert in cryptocurrency trading and market analysis.",
+      id: "697113179979539ef20d9c3a",
+      name: "Zero or Hero",
+      description: "100x signals for the financially reckless 🚀",
       type: "TELEGRAM_CHANNEL",
       price: "0.01 USD",
     },
