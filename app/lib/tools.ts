@@ -1,16 +1,20 @@
 export async function getStatus(): Promise<string> {
   const status = {
     address: "0x758190cE14e736A93C88063b5325B72b8e159C51",
-    balance: "42",
+    balance: "32.877",
     tokens: [
       {
-        address: "0x2d03bece6747adc00e1a131bba1469c15fd11e03",
-        amount: "0.13",
+        address: "0x062E66477Faf219F25D27dCED647BF57C3107d52",
+        amount: "0.0000001",
       },
     ],
     buyTrades: [
       {
         executed: new Date().toISOString(),
+        inputToken: "NATIVE",
+        outputToken: "0x062E66477Faf219F25D27dCED647BF57C3107d52",
+        amount: "0.1",
+        tx: "0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df3e8250b64aa5f22da",
       },
     ],
   };
@@ -64,6 +68,7 @@ export async function getDataSourcePosts(dataSource: string): Promise<string> {
 
 export async function executeBuyTrade(outputToken: string): Promise<string> {
   const trade = {
+    executed: new Date().toISOString(),
     inputToken: "NATIVE",
     outputToken: outputToken,
     amount: "0.1",
