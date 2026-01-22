@@ -6,8 +6,8 @@ import express, { Request, Response } from "express";
 import { Server } from "http";
 import * as cron from "node-cron";
 import TelegramBot from "node-telegram-bot-api";
-import { logger } from "./utils/logger";
 import { getDataSourcePosts, getDataSources } from "./utils/data-source";
+import { logger } from "./utils/logger";
 
 const app = express();
 
@@ -18,8 +18,10 @@ const TELEGRAM_SELLER_CHAT_ID = 67916468;
 
 const X402_FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
 const X402_SELLER_WALLET = "0x4306D7a79265D2cb85Db0c5a55ea5F4f6F73C4B1";
-const X402_NETWORK = "cronos-testnet";
-const X402_USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // Cronos Testnet
+// const X402_NETWORK = "cronos-testnet";
+const X402_NETWORK = "cronos-mainnet";
+// const X402_USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // Cronos Testnet
+const X402_USDCE_CONTRACT = "0xf951eC28187D9E5Ca673Da8FE6757E6f0Be5F77C"; // Cronos Mainnet
 
 let server: Server | undefined;
 let greetingTask: cron.ScheduledTask | undefined;
@@ -62,12 +64,12 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
       x402Version: 1,
       paymentRequirements: {
         scheme: "exact",
-        network: X402_NETWORK, // Switch to 'cronos' for mainnet
+        network: X402_NETWORK,
         payTo: X402_SELLER_WALLET,
         asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
-        maxAmountRequired: "100000", // 0.1 USDC.e (6 decimals)
+        maxAmountRequired: "10000", // 0.01 USDC.e (6 decimals)
         maxTimeoutSeconds: 300,
       },
     });
@@ -84,7 +86,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
         asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
-        maxAmountRequired: "100000", // 0.1 USDC.e (6 decimals)
+        maxAmountRequired: "10000", // 0.01 USDC.e (6 decimals)
         maxTimeoutSeconds: 300,
       },
     };
@@ -114,8 +116,13 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
       },
     );
 
-    // Step 4: Check settlement and return content
+    // Step 4: Check settlement, notify seller and return content
     if (settleResponse.data.event === "payment.settled") {
+      if (bot) {
+        const text = `New purchase 💸\n\nhttps://explorer.cronos.org/tx/${settleResponse.data.txHash}`;
+        await bot.sendMessage(TELEGRAM_SELLER_CHAT_ID, text);
+      }
+
       const posts = await getDataSourcePosts();
 
       return res.status(200).json({
@@ -146,27 +153,6 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
     });
   }
 });
-
-// API endpoint to handle free posts and notify seller via Telegram
-app.get(
-  "/api/data-sources/free-posts",
-  async (_req: Request, res: Response) => {
-    logger.info("[API] Received get request for /api/data-sources/free-posts");
-
-    if (bot) {
-      const text = `
-New purchase 💸
-
-https://explorer.cronos.org/tx/0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df3e8250b64aa5f22da
-      `;
-      await bot.sendMessage(TELEGRAM_SELLER_CHAT_ID, text);
-    }
-
-    const posts = await getDataSourcePosts();
-
-    res.json(posts);
-  },
-);
 
 async function startServer(): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -208,6 +194,7 @@ function startCronScheduler(): void {
   logger.info("[Cron] Cron scheduler setup completed");
 }
 
+// @ts-ignore
 function startTelegramBot(): void {
   if (!TELEGRAM_BOT_TOKEN) {
     logger.error(
