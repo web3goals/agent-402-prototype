@@ -69,7 +69,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
         asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
-        maxAmountRequired: "10000", // 0.01 USDC.e (6 decimals)
+        maxAmountRequired: "1000", // 0.001 USDC.e (6 decimals)
         maxTimeoutSeconds: 300,
       },
     });
@@ -86,7 +86,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
         asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
-        maxAmountRequired: "10000", // 0.01 USDC.e (6 decimals)
+        maxAmountRequired: "1000", // 0.001 USDC.e (6 decimals)
         maxTimeoutSeconds: 300,
       },
     };

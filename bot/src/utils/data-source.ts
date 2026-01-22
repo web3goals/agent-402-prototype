@@ -7,7 +7,7 @@ export async function getDataSources(): Promise<DataSource[]> {
       name: "Zero or Hero",
       description: "100x signals for the financially reckless 🚀",
       type: "TELEGRAM_CHANNEL",
-      price: "0.01 USD",
+      price: "0.001 USD",
     },
   ];
 
