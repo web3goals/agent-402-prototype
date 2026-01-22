@@ -1,11 +1,11 @@
 import { createFailedApiResponse, createSuccessApiResponse } from "@/lib/api";
+import { getErrorString } from "@/lib/error";
 import {
   BuiltInChainId,
   fetchBestTrade,
   PoolType,
   utils as SwapSdkUtils,
 } from "@vvs-finance/swap-sdk";
-import axios from "axios";
 
 export async function POST() {
   try {
@@ -42,12 +42,7 @@ export async function POST() {
     return createSuccessApiResponse({ message: "Ok!" });
   } catch (error) {
     console.error(
-      "[API] Failed to execute trade, error:",
-      axios.isAxiosError(error)
-        ? error.response?.data || error.message
-        : error instanceof Error
-        ? error.message
-        : String(error),
+      `[API] Failed to execute trade, error: ${getErrorString(error)}`,
     );
     return createFailedApiResponse(
       { message: "Internal server error, try again later" },

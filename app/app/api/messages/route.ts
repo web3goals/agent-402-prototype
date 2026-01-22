@@ -1,7 +1,7 @@
 import { processMessage } from "@/lib/agent";
 import { createFailedApiResponse, createSuccessApiResponse } from "@/lib/api";
+import { getErrorString } from "@/lib/error";
 import { AIMessage, BaseMessage, HumanMessage } from "@langchain/core/messages";
-import axios from "axios";
 import { NextRequest } from "next/server";
 import z from "zod";
 
@@ -57,12 +57,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(
-      "[API] Failed to post message, error:",
-      axios.isAxiosError(error)
-        ? error.response?.data || error.message
-        : error instanceof Error
-        ? error.message
-        : String(error),
+      `[API] Failed to post message, error: ${getErrorString(error)}`,
     );
     return createFailedApiResponse(
       { message: "Internal server error, try again later" },

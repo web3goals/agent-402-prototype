@@ -1,6 +1,6 @@
 import { createFailedApiResponse, createSuccessApiResponse } from "@/lib/api";
+import { getErrorString } from "@/lib/error";
 import { getPaidData } from "@/lib/x402";
-import axios from "axios";
 import { ethers } from "ethers";
 
 export async function GET() {
@@ -24,14 +24,7 @@ export async function GET() {
 
     return createSuccessApiResponse({ posts });
   } catch (error) {
-    console.error(
-      "[API] Failed to get posts, error:",
-      axios.isAxiosError(error)
-        ? error.response?.data || error.message
-        : error instanceof Error
-          ? error.message
-          : String(error),
-    );
+    console.error(`[API] Failed to get posts, error: ${getErrorString(error)}`);
     return createFailedApiResponse(
       { message: "Internal server error, try again later" },
       500,
