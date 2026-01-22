@@ -17,7 +17,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_SUBSCRIBERS = [67916468];
 
 const X402_FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
-const X402_SELLER_WALLET = process.env.SELLER_WALLET;
+const X402_SELLER_WALLET = "0x4306D7a79265D2cb85Db0c5a55ea5F4f6F73C4B1";
 const X402_NETWORK = "cronos-testnet";
 const X402_USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // Cronos Testnet
 
