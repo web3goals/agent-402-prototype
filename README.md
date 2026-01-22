@@ -23,7 +23,20 @@ This situation is a great opportunity for an agent to emerge that can help both 
 
 ## ⚙️ How it works
 
-...
+### Telegram Channel Author
+
+1. **Onboarding**: The author starts the bot and submits their channel details (link, username, description), sets a price per post fetch in USDC, and provides a Cronos wallet address for payments.
+2. **Integration**: The author adds the bot to their channel.
+3. **Monetization**: When the author publishes a post, the bot saves it and makes it available for purchase via x402.
+4. **Earnings**: The bot notifies the author whenever their posts are purchased.
+
+### Agent User
+
+1. **Discovery**: The user opens the app and chats with the agent to view available data sources, including channel details and pricing.
+2. **Trading Insights**: The agent fetches paid posts using x402, analyzes them, and generates trading ideas.
+3. **Execution**: The user approves a trade based on the idea, and the agent executes the swap via VVS Finance.
+4. **Portfolio Management**: The user can view the agent's address, balance, token holdings, and trade history.
+5. **Lambo Mode**: The user can enable "Lambo Mode" to let the agent automatically fetch posts, analyze markets, and execute buy/sell decisions autonomously.
 
 ## 🛠️ Technologies
 
