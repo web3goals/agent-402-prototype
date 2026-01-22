@@ -51,10 +51,16 @@ async function createPaymentHeader(
     Math.floor(Date.now() / 1000) + paymentRequirements.maxTimeoutSeconds;
 
   // Set up EIP-712 domain
+  // const domain = {
+  //   name: "Bridged USDC (Stargate)",
+  //   version: "1",
+  //   chainId: "338",
+  //   verifyingContract: paymentRequirements.asset,
+  // };
   const domain = {
     name: "Bridged USDC (Stargate)",
-    version: "1",
-    chainId: "338",
+    version: "2",
+    chainId: "25",
     verifyingContract: paymentRequirements.asset,
   };
 
