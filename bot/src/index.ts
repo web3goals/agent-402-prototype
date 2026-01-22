@@ -14,7 +14,7 @@ const app = express();
 const APP_PORT = process.env.PORT || 8000;
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_SUBSCRIBERS = [67916468];
+const TELEGRAM_SELLER_CHAT_ID = 67916468;
 
 const X402_FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
 const X402_SELLER_WALLET = "0x4306D7a79265D2cb85Db0c5a55ea5F4f6F73C4B1";
@@ -147,7 +147,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
   }
 });
 
-// API endpoint to handle data source purchase notifications
+// API endpoint to handle free posts and notify seller via Telegram
 app.get(
   "/api/data-sources/free-posts",
   async (_req: Request, res: Response) => {
@@ -159,9 +159,7 @@ New purchase 💸
 
 https://explorer.cronos.org/tx/0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df3e8250b64aa5f22da
       `;
-      for (const subscriber of TELEGRAM_SUBSCRIBERS) {
-        await bot.sendMessage(subscriber, text);
-      }
+      await bot.sendMessage(TELEGRAM_SELLER_CHAT_ID, text);
     }
 
     const posts = await getDataSourcePosts();
