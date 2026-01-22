@@ -14,14 +14,15 @@ const app = express();
 const APP_PORT = process.env.PORT || 8000;
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_SELLER_CHAT_ID = 67916468;
 
 const X402_FACILITATOR_URL = "https://facilitator.cronoslabs.org/v2/x402";
 const X402_SELLER_WALLET = "0x4306D7a79265D2cb85Db0c5a55ea5F4f6F73C4B1";
+const X402_SELLER_TELEGRAM_CHAT_ID = 67916468;
 // const X402_NETWORK = "cronos-testnet";
 const X402_NETWORK = "cronos-mainnet";
 // const X402_USDCE_CONTRACT = "0xc01efAaF7C5C61bEbFAeb358E1161b537b8bC0e0"; // Cronos Testnet
 const X402_USDCE_CONTRACT = "0xf951eC28187D9E5Ca673Da8FE6757E6f0Be5F77C"; // Cronos Mainnet
+const X402_MAX_AMOUNT_REQUIRED = "1000"; // 0.001 USDC.e (6 decimals)
 
 let server: Server | undefined;
 let greetingTask: cron.ScheduledTask | undefined;
@@ -71,7 +72,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
         asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
-        maxAmountRequired: "1000", // 0.001 USDC.e (6 decimals)
+        maxAmountRequired: X402_MAX_AMOUNT_REQUIRED,
         maxTimeoutSeconds: 300,
       },
     });
@@ -88,7 +89,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
         asset: X402_USDCE_CONTRACT,
         description: "Premium API data access",
         mimeType: "application/json",
-        maxAmountRequired: "1000", // 0.001 USDC.e (6 decimals)
+        maxAmountRequired: X402_MAX_AMOUNT_REQUIRED,
         maxTimeoutSeconds: 300,
       },
     };
@@ -122,7 +123,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
     if (settleResponse.data.event === "payment.settled") {
       if (bot) {
         const text = `New purchase 💸\n\nhttps://explorer.cronos.org/tx/${settleResponse.data.txHash}`;
-        await bot.sendMessage(TELEGRAM_SELLER_CHAT_ID, text);
+        await bot.sendMessage(X402_SELLER_TELEGRAM_CHAT_ID, text);
       }
 
       const posts = await getDataSourcePosts(dataSource);
