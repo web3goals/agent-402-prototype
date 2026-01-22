@@ -11,8 +11,9 @@ import { ethers } from "ethers";
 import { getErrorString } from "./error";
 import { getPaidData } from "./x402";
 
-// TODO: Implement
-export async function getStatus(): Promise<string> {
+export async function getStatus(
+  tokenAddresses: string[] = [],
+): Promise<string> {
   // Get wallet
   const provider = getProvider();
   const wallet = getWallet(provider);
@@ -23,15 +24,36 @@ export async function getStatus(): Promise<string> {
   // Get balance
   const balance = await provider.getBalance(address);
 
+  // Get token balances
+  const tokens = [];
+  for (const tokenAddress of tokenAddresses) {
+    try {
+      const contract = new ethers.Contract(
+        tokenAddress,
+        [
+          "function balanceOf(address owner) view returns (uint256)",
+          "function decimals() view returns (uint8)",
+        ],
+        provider,
+      );
+      const tokenBalance = await contract.balanceOf(address);
+      const decimals = await contract.decimals();
+      tokens.push({
+        address: tokenAddress,
+        amount: ethers.formatUnits(tokenBalance, decimals),
+      });
+    } catch (error) {
+      console.warn(
+        `[Tools] Failed to get balance for token ${tokenAddress}`,
+        error,
+      );
+    }
+  }
+
   const result = {
-    address: address,
+    address,
     balance: ethers.formatEther(balance),
-    tokens: [
-      {
-        address: "0x062E66477Faf219F25D27dCED647BF57C3107d52",
-        amount: "0.0000001",
-      },
-    ],
+    tokens,
   };
 
   return JSON.stringify(result);

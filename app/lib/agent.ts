@@ -20,12 +20,20 @@ const model = new ChatOpenAI({
   temperature: 0,
 });
 
-const getStatusTool = tool(async () => await getStatus(), {
-  name: "get_status",
-  description:
-    "Retrieves the agent's current status, including its wallet address, native token balance, and token holdings.",
-  schema: z.object({}),
-});
+const getStatusTool = tool(
+  async (input) => await getStatus(input.tokenAddresses),
+  {
+    name: "get_status",
+    description:
+      "Retrieves the agent's current status, including its wallet address, native token balance, and token holdings. Can optionally check balances for a provided list of token addresses.",
+    schema: z.object({
+      tokenAddresses: z
+        .array(z.string())
+        .optional()
+        .describe("List of token contract addresses to check balances for."),
+    }),
+  },
+);
 
 const getDataSourcesTool = tool(async () => await getDataSources(), {
   name: "get_data_sources",
@@ -126,6 +134,10 @@ Your primary goal is to analyze premium data sources to identify high-conviction
 
 1. Unless the user has explicitly specified a style (Conservative or Aggressive), you **MUST** ask the user for their preferred trading style before enabling Lambo Mode.
 2. Once the user confirms the style, call \`enable_lambo_mode\` with the corresponding style parameter.
+
+# Workflow: Checking Status
+
+When calling \`get_status\`, you **MUST** include all supported token addresses (listed below) in the \`tokenAddresses\` argument to provide a complete overview of holdings.
 
 # Supported Tokens (Cronos Mainnet)
 
