@@ -14,7 +14,9 @@ export async function getDataSources(): Promise<DataSource[]> {
   return dataSources;
 }
 
-export async function getDataSourcePosts(): Promise<DataSourcePost[]> {
+export async function getDataSourcePosts(
+  _dataSource: string,
+): Promise<DataSourcePost[]> {
   const dataSourcePosts: DataSourcePost[] = [
     {
       created: new Date().toISOString(),

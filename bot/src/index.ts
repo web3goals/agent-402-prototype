@@ -52,6 +52,8 @@ app.get("/api/data-sources", async (_req: Request, res: Response) => {
 app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
   logger.info("[API] Received request for /api/data-sources/posts");
 
+  const dataSource = req.query.dataSource as string;
+
   const paymentHeader =
     req.headers["X-PAYMENT"] ||
     req.headers["x-payment"] ||
@@ -123,7 +125,7 @@ app.get("/api/data-sources/posts", async (req: Request, res: Response) => {
         await bot.sendMessage(TELEGRAM_SELLER_CHAT_ID, text);
       }
 
-      const posts = await getDataSourcePosts();
+      const posts = await getDataSourcePosts(dataSource);
 
       return res.status(200).json({
         posts,
