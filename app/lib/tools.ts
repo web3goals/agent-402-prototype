@@ -10,6 +10,7 @@ import axios from "axios";
 import { ethers } from "ethers";
 import { getErrorString } from "./error";
 import { getPaidData } from "./x402";
+import { botConfig } from "@/config/bot";
 
 export async function getStatus(
   tokenAddresses: string[] = [],
@@ -62,7 +63,7 @@ export async function getStatus(
 export async function getDataSources(): Promise<string> {
   try {
     console.log(`[Tools] Getting data sources...`);
-    const url = `http://localhost:8000/api/data-sources`;
+    const url = new URL("/api/data-sources", botConfig.url).toString();
     const { data } = await axios.get(url);
 
     const result = { dataSources: data.dataSources };
@@ -87,8 +88,10 @@ export async function getDataSourcePosts(dataSource: string): Promise<string> {
     const wallet = getWallet(provider);
 
     // Get paid data
-    const url = `http://localhost:8000/api/data-sources/posts?dataSource=${dataSource}`;
-    const data = await getPaidData(url, wallet);
+    const url = new URL("/api/data-sources/posts", botConfig.url);
+    url.searchParams.append("dataSource", dataSource);
+
+    const data = await getPaidData(url.toString(), wallet);
 
     const result = { posts: data.posts };
 
