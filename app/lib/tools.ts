@@ -1,5 +1,14 @@
 import { DataSource, DataSourcePost } from "@/types/data-source";
 import axios from "axios";
+import { getErrorString } from "./error";
+import {
+  approveIfNeeded,
+  BuiltInChainId,
+  executeTrade,
+  fetchBestTrade,
+  PoolType,
+} from "@vvs-finance/swap-sdk";
+import { ethers } from "ethers";
 
 export async function getDemoStatus(): Promise<string> {
   const status = {
@@ -67,6 +76,7 @@ export async function getDemoDataSourcePosts(
   return JSON.stringify({ dataSource, dataSourcePosts, payment });
 }
 
+// TODO: Delete
 export async function executeDemoBuyTrade(
   outputToken: string,
 ): Promise<string> {
@@ -79,6 +89,73 @@ export async function executeDemoBuyTrade(
   };
 
   return JSON.stringify(trade);
+}
+
+export async function executeBuyTrade(outputToken: string): Promise<string> {
+  try {
+    console.log(`[Tools] Executing buy trade, output token: ${outputToken}...`);
+
+    // Fetch the best trade from VVS Finance SDK
+    const chainId = BuiltInChainId.CRONOS_MAINNET;
+    const inputToken = "NATIVE";
+    const amount = "0.1";
+    const clientId = process.env.VVS_FINANCE_CLIENT_ID;
+
+    const trade = await fetchBestTrade(
+      chainId,
+      inputToken,
+      outputToken,
+      amount,
+      {
+        poolTypes: [
+          PoolType.V2,
+          PoolType.V3_100,
+          PoolType.V3_500,
+          PoolType.V3_3000,
+          PoolType.V3_10000,
+        ],
+        maxHops: 3,
+        maxSplits: 2,
+        quoteApiClientId: clientId,
+      },
+    );
+    console.log(
+      `[Tools] Trade: ${JSON.stringify(trade, (_, value) =>
+        typeof value === "bigint" ? value.toString() : value,
+      )}`,
+    );
+
+    // Execute the trade
+    const privateKey = process.env.PRIVATE_KEY;
+    if (!privateKey) {
+      throw new Error("PRIVATE_KEY is not defined in environment variables");
+    }
+    const rpc = "https://evm-dev.cronos.org";
+    const provider = new ethers.JsonRpcProvider(rpc);
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    const approveTx = await approveIfNeeded(chainId, trade, wallet);
+    if (approveTx) {
+      await approveTx.wait();
+    }
+
+    const executeTx = await executeTrade(chainId, trade, wallet);
+
+    const result = {
+      chainId,
+      inputToken,
+      outputToken,
+      amount,
+      tx: executeTx.hash,
+    };
+
+    return JSON.stringify(result);
+  } catch (error) {
+    console.error(
+      `[Tools] Failed to execute buy trade, error: ${getErrorString(error)}`,
+    );
+    return `Failed to execute buy trade, error: ${getErrorString(error)}`;
+  }
 }
 
 export async function enableDemoLamboMode(
