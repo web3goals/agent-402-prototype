@@ -5,9 +5,9 @@ import { z } from "zod";
 import {
   disableDemoLamboMode,
   enableDemoLamboMode,
-  executeDemoBuyTrade,
-  getDemoDataSourcePosts,
-  getDemoDataSources,
+  executeBuyTrade,
+  getDataSourcePosts,
+  getDataSources,
   getDemoStatus,
 } from "./tools";
 
@@ -27,7 +27,7 @@ const getStatusTool = tool(async () => await getDemoStatus(), {
   schema: z.object({}),
 });
 
-const getDataSourcesTool = tool(async () => await getDemoDataSources(), {
+const getDataSourcesTool = tool(async () => await getDataSources(), {
   name: "get_data_sources",
   description:
     "Retrieves a list of available premium data sources (e.g., private Telegram channels) that can be accessed via the x402 protocol.",
@@ -35,7 +35,7 @@ const getDataSourcesTool = tool(async () => await getDemoDataSources(), {
 });
 
 const getDataSourcePostsTool = tool(
-  async (input) => await getDemoDataSourcePosts(input.dataSource),
+  async (input) => await getDataSourcePosts(input.dataSource),
   {
     name: "get_data_source_posts",
     description:
@@ -51,7 +51,7 @@ const getDataSourcePostsTool = tool(
 );
 
 const executeBuyTradeTool = tool(
-  async (input) => await executeDemoBuyTrade(input.outputToken),
+  async (input) => await executeBuyTrade(input.outputToken),
   {
     name: "execute_buy_trade",
     description:
