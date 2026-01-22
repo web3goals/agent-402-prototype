@@ -179,9 +179,9 @@ async function startServer(): Promise<void> {
 function startCronScheduler(): void {
   logger.info("[Cron] Setting up cron scheduler...");
 
-  // Schedule the greeting task to run every 5 minutes
+  // Schedule the greeting task to run every hour
   greetingTask = cron.schedule(
-    "*/5 * * * *",
+    "0 * * * *",
     async () => {
       try {
         logger.info("[Cron] Hello! This is your scheduled greeting!");
