@@ -18,8 +18,8 @@ This situation is a great opportunity for an agent to emerge that can help both 
 
 ## 🔗 Artifacts
 
-- App - https://agent-402-beta.vercel.app/
-- Bot - https://t.me/agent_402_bot
+- App — https://agent-402-beta.vercel.app/
+- Bot — https://t.me/agent_402_bot
 
 ## ⚙️ How it works
 
