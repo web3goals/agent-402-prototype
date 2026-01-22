@@ -1,3 +1,4 @@
+import { chainConfig } from "@/config/chain";
 import {
   approveIfNeeded,
   BuiltInChainId,
@@ -11,28 +12,29 @@ import { getErrorString } from "./error";
 import { getPaidData } from "./x402";
 
 // TODO: Implement
-export async function getDemoStatus(): Promise<string> {
-  const status = {
-    address: "0x758190cE14e736A93C88063b5325B72b8e159C51",
-    balance: "32.877",
+export async function getStatus(): Promise<string> {
+  // Get wallet
+  const provider = getProvider();
+  const wallet = getWallet(provider);
+
+  // Get address
+  const address = wallet.address;
+
+  // Get balance
+  const balance = await provider.getBalance(address);
+
+  const result = {
+    address: address,
+    balance: ethers.formatEther(balance),
     tokens: [
       {
         address: "0x062E66477Faf219F25D27dCED647BF57C3107d52",
         amount: "0.0000001",
       },
     ],
-    buyTrades: [
-      {
-        executed: new Date().toISOString(),
-        inputToken: "NATIVE",
-        outputToken: "0x062E66477Faf219F25D27dCED647BF57C3107d52",
-        amount: "0.1",
-        tx: "0x7a3db07bb6b0d298a83896b41619dfe12b86233933c35df3e8250b64aa5f22da",
-      },
-    ],
   };
 
-  return JSON.stringify(status);
+  return JSON.stringify(result);
 }
 
 export async function getDataSources(): Promise<string> {
@@ -58,15 +60,9 @@ export async function getDataSourcePosts(dataSource: string): Promise<string> {
       `[Tools] Getting data source posts, data source: ${dataSource}...`,
     );
 
-    // Prepare wallet
-    const privateKey = process.env.PRIVATE_KEY;
-    if (!privateKey) {
-      throw new Error("PRIVATE_KEY is not defined in environment variables");
-    }
-    const rpc = "https://evm.cronos.org";
-    // const rpc = "https://evm-t3.cronos.org";
-    const provider = new ethers.JsonRpcProvider(rpc);
-    const wallet = new ethers.Wallet(privateKey, provider);
+    // Get wallet
+    const provider = getProvider();
+    const wallet = getWallet(provider);
 
     // Get paid data
     const url = `http://localhost:8000/api/data-sources/posts?dataSource=${dataSource}`;
@@ -115,14 +111,8 @@ export async function executeBuyTrade(outputToken: string): Promise<string> {
     );
 
     // Execute the trade
-    const privateKey = process.env.PRIVATE_KEY;
-    if (!privateKey) {
-      throw new Error("PRIVATE_KEY is not defined in environment variables");
-    }
-    const rpc = "https://evm.cronos.org";
-    // const rpc = "https://evm-t3.cronos.org";
-    const provider = new ethers.JsonRpcProvider(rpc);
-    const wallet = new ethers.Wallet(privateKey, provider);
+    const provider = getProvider();
+    const wallet = getWallet(provider);
 
     const approveTx = await approveIfNeeded(chainId, trade, wallet);
     if (approveTx) {
@@ -151,13 +141,28 @@ export async function executeBuyTrade(outputToken: string): Promise<string> {
 export async function enableDemoLamboMode(
   style: "CONSERVATIVE" | "AGGRESSIVE",
 ): Promise<string> {
-  const status = { enabled: true, style };
+  const result = { enabled: true, style };
 
-  return JSON.stringify(status);
+  return JSON.stringify(result);
 }
 
 export async function disableDemoLamboMode(): Promise<string> {
-  const status = { enabled: false };
+  const result = { enabled: false };
 
-  return JSON.stringify(status);
+  return JSON.stringify(result);
+}
+
+function getProvider(): ethers.JsonRpcProvider {
+  return new ethers.JsonRpcProvider(chainConfig.rpc);
+}
+
+function getWallet(provider: ethers.JsonRpcProvider): ethers.Wallet {
+  const privateKey = process.env.PRIVATE_KEY;
+  if (!privateKey) {
+    throw new Error("PRIVATE_KEY is not defined in environment variables");
+  }
+
+  const wallet = new ethers.Wallet(privateKey, provider);
+
+  return wallet;
 }

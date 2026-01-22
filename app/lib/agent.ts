@@ -8,7 +8,7 @@ import {
   executeBuyTrade,
   getDataSourcePosts,
   getDataSources,
-  getDemoStatus,
+  getStatus,
 } from "./tools";
 
 const model = new ChatOpenAI({
@@ -20,10 +20,10 @@ const model = new ChatOpenAI({
   temperature: 0,
 });
 
-const getStatusTool = tool(async () => await getDemoStatus(), {
+const getStatusTool = tool(async () => await getStatus(), {
   name: "get_status",
   description:
-    "Retrieves the agent's current status, including its wallet address, native token balance, token holdings, and recent trade history.",
+    "Retrieves the agent's current status, including its wallet address, native token balance, and token holdings.",
   schema: z.object({}),
 });
 
